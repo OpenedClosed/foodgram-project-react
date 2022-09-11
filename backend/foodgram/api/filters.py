@@ -1,6 +1,5 @@
 from django.db.models import Q
 from django_filters import BooleanFilter, CharFilter, FilterSet
-
 from recipes.models import Recipe
 
 

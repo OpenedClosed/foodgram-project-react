@@ -29,8 +29,15 @@ router.register(
 )
 
 urlpatterns = [
-    path('recipes/<recipe_id>/shopping_cart/', shoping_cart),
-    path('recipes/download_shopping_cart/', download_shoping_cart),
-    path('recipes/<recipe_id>/favorite/', favorite),
+    path(
+        'recipes/<int:recipe_id>/shopping_cart/',
+        shoping_cart, name='shopping_cart'
+    ),
+    path(
+        'recipes/download_shopping_cart/',
+        download_shoping_cart,
+        name='download_shopping_cart'
+    ),
+    path('recipes/<int:recipe_id>/favorite/', favorite, name='favorite'),
     path('', include(router.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

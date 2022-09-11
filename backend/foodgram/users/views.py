@@ -1,10 +1,11 @@
-from api.viewsets import CreateReadViewSet, ReadListViewSet
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from api.viewsets import CreateReadViewSet, ReadListViewSet
 
 from .models import CustomUser, Subscription
 from .serializers import (ChangePasswordSerializer, CustomUserSerializer,
@@ -15,18 +16,15 @@ from .serializers import (ChangePasswordSerializer, CustomUserSerializer,
 class CustomUserViewSet(CreateReadViewSet):
     """Вьюсет данных пользователей"""
     queryset = CustomUser.objects.all().order_by('id')
+    permission_classes = (AllowAny, )
 
     def get_serializer_class(self):
         if self.request.method in ('POST', ):
             return SignUpSerializer
         return CustomUserSerializer
-    permission_classes = (AllowAny, )
 
-    @action(
-        methods=['get', ],
-        detail=False,
-        permission_classes=(IsAuthenticated, )
-    )
+    @action(methods=['get', ], detail=False,
+            permission_classes=(IsAuthenticated, ))
     def me(self, request):
         """Метод, отвечающий за чтение пользователем
         собственных учетных данных"""
@@ -34,11 +32,8 @@ class CustomUserViewSet(CreateReadViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(
-        methods=['post', ],
-        detail=False,
-        permission_classes=(IsAuthenticated, )
-    )
+    @action(methods=['post', ], detail=False,
+            permission_classes=(IsAuthenticated, ))
     def set_password(self, request):
         """Метод, отвечающий за изменение пароля пользователем"""
         serializer = ChangePasswordSerializer(data=request.data)
@@ -86,7 +81,7 @@ def get_token(request):
     new_user = get_object_or_404(CustomUser, email=email)
 
     if CustomUser.objects.filter(email=email, password=password).exists():
-        if Token.objects.filter(user=new_user):
+        if Token.objects.filter(user=new_user).exists():
             Token.objects.filter(user=new_user).delete()
         token = Token.objects.create(user=new_user)
         return Response({"auth_token": str(token)}, status=status.HTTP_200_OK)

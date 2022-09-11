@@ -1,16 +1,19 @@
+from io import StringIO
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (AmountOfIngredients, Favorite, Ingredient, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import filters, viewsets
 from rest_framework.decorators import api_view
 
+from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
+                            ShoppingCart, Tag)
+
 from .filters import RecipeFilterSet
-from .help_functions import extra_recipe, text_to_pdf
+from .help_functions import extra_recipe, generate_pdf
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
-                          RecipeSerializer, TagSerializer)
+                          RecipeSerializer, ShortViewOfRecipe, TagSerializer)
 from .viewsets import ReadViewSet
 
 
@@ -30,76 +33,73 @@ class TagViewSet(ReadViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Рецепт"""
+    queryset = Recipe.objects.all()
+    permission_classes = [IsAuthorOrReadOnly, ]
+    filterset_class = RecipeFilterSet
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
+
     def get_serializer_class(self):
         if self.request.method in ('GET', ):
             return RecipeSerializer
         return RecipeCreateSerializer
-    queryset = Recipe.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    permission_classes = [IsAuthorOrReadOnly, ]
-    filterset_class = RecipeFilterSet
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
 
 
 @api_view(['POST', 'DELETE', ])
 def favorite(request, recipe_id):
     """Вью-функция для добавления рецепта в избранное"""
     obj = Favorite
-    message1 = "Рецепт уже в избранном"
-    message2 = "Рецепт успешно удален из избранного"
-    message3 = "Рецепта нет в избранном"
-    return extra_recipe(request, recipe_id, obj, message1, message2, message3)
+    message_exists = "Рецепт уже в избранном"
+    message_del = "Рецепт успешно удален из избранного"
+    message_no = "Рецепта нет в избранном"
+    return extra_recipe(request, recipe_id, obj, ShortViewOfRecipe,
+                        message_exists, message_del, message_no)
 
 
 @api_view(['POST', 'DELETE', ])
 def shoping_cart(request, recipe_id):
     """Вью-функция для добавления рецепта в список покупок"""
     obj = ShoppingCart
-    message1 = "Рецепт уже в спике покупок"
-    message2 = "Рецепт успешно удален из спика покупок"
-    message3 = "Рецепта нет в списке покупок"
-    return extra_recipe(request, recipe_id, obj, message1, message2, message3)
+    message_exists = "Рецепт уже в спике покупок"
+    message_del = "Рецепт успешно удален из спика покупок"
+    message_no = "Рецепта нет в списке покупок"
+    return extra_recipe(request, recipe_id, obj, ShortViewOfRecipe,
+                        message_exists, message_del, message_no)
 
 
 @api_view(['GET', ])
 def download_shoping_cart(request):
     """Вью-функция для загрузки списка покупок"""
-    with open("media/recipes/files/shoping_cart.txt", "w") as file:
-        user = request.user
-        shopping_cart = ShoppingCart.objects.filter(user=user)
-        d = {}
-        string = ''
-        for obj in shopping_cart.values():
-            recipe = get_object_or_404(Recipe, id=obj['recipe_id'])
-            for ingredient in recipe.ingredients.all():
-                name = ingredient.name
-                amount = get_object_or_404(
-                    AmountOfIngredients,
-                    ingredient=ingredient,
-                    recipe=recipe
-                ).amount
-                if name not in d.keys():
-                    d[name] = 0
-                d[name] += amount
+    user = request.user
+    shopping_cart = ShoppingCart.objects.filter(user=user)
+    ingredients_in_shopping_cart = {}
+    text_in_shopping_cart = ''
+    text_file = StringIO()
+    for obj in shopping_cart.values():
+        recipe = get_object_or_404(Recipe, id=obj['recipe_id'])
+        for ingredient in recipe.ingredients.values_list('name', 'id'):
+            name = ingredient[0]
+            amount = get_object_or_404(
+                AmountOfIngredient,
+                ingredient=ingredient[1],
+                recipe=recipe
+            ).amount
+            if name not in ingredients_in_shopping_cart:
+                ingredients_in_shopping_cart[name] = 0
+            ingredients_in_shopping_cart[name] += amount
+    for item in ingredients_in_shopping_cart:
+        ingredient = get_object_or_404(Ingredient, name=item)
+        measurement_unit = ingredient.measurement_unit
+        text_in_shopping_cart += (f'{item} ({measurement_unit}) - '
+                                  f'{ingredients_in_shopping_cart[item]}\n')
+    text_file.write(text_in_shopping_cart)
 
-        for item in d.keys():
-            ingredient = get_object_or_404(Ingredient, name=item)
-            measurement_unit = ingredient.measurement_unit
-            string += f'{item} ({measurement_unit}) - {d[item]}\n'
-
-        file.write(string)
-    input_filename = 'media/recipes/files/shoping_cart.txt'
-    output_filename = 'media/recipes/files/shoping_cart.pdf'
-    file = open(input_filename)
-    text = file.read()
-    file.close()
-    text_to_pdf(text, output_filename)
-    file_pointer = open(input_filename, "r")
+    input_file = text_file.getvalue()
+    output_file = generate_pdf(input_file)
     response = HttpResponse(
-        file_pointer,
+        output_file.read(),
         content_type='application/force-download'
     )
     response['Content-Disposition'] = 'attachment; filename=shoping_cart.pdf'

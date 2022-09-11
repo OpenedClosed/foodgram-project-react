@@ -1,9 +1,11 @@
-from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (AmountOfIngredients, Favorite, Ingredient, Recipe,
-                            RecipeTag, ShoppingCart, Tag)
 from rest_framework import serializers
+
+from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
+                            ShoppingCart, Tag)
 from users.serializers import CustomUserSerializer
+
+from .help_functions import create_amout_of_ingredients, create_recipe_tag
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -46,7 +48,7 @@ class IngredientShowSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField()
 
     class Meta:
-        model = AmountOfIngredients
+        model = AmountOfIngredient
         fields = (
             'id',
             'name',
@@ -58,18 +60,14 @@ class IngredientShowSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор показа списка рецептов"""
     author = CustomUserSerializer(read_only=True)
-    ingredients = serializers.SerializerMethodField()
-    tags = serializers.SerializerMethodField()
+    ingredients = IngredientShowSerializer(
+        source='amountofingredient',
+        read_only=True,
+        many=True
+    )
+    tags = TagSerializer(read_only=True, many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-
-    def get_ingredients(self, obj):
-        ingredients = AmountOfIngredients.objects.filter(recipe=obj)
-        return IngredientShowSerializer(ingredients, many=True).data
-
-    def get_tags(self, obj):
-        tags = Tag.objects.filter(recipe=obj)
-        return TagSerializer(tags, many=True).data
 
     def get_is_favorited(self, obj):
         request_user = self.context.get('request').user.id
@@ -78,7 +76,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=request_user
         ).exists()
         obj.is_favorited = queryset
-        obj.save()
         return obj.is_favorited
 
     def get_is_in_shopping_cart(self, obj):
@@ -88,7 +85,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=request_user
         ).exists()
         obj.is_in_shopping_cart = queryset
-        obj.save()
         return obj.is_in_shopping_cart
 
     class Meta:
@@ -112,7 +108,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = IngredientCreateSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
-        many=True
+        many=True,
     )
     image = Base64ImageField(max_length=None)
 
@@ -121,59 +117,28 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
 
         recipe = Recipe.objects.create(
-            **validated_data,
-            is_favorited=False,
-            is_in_shopping_cart=False
+            **validated_data
         )
-
-        for ingredient in ingredients:
-            current_ingredient = get_object_or_404(
-                Ingredient,
-                id=ingredient['id']
-            )
-            amount = ingredient['amount']
-            AmountOfIngredients.objects.create(
-                recipe=recipe,
-                ingredient=current_ingredient,
-                amount=amount
-            )
-
-        for tag in tags:
-            RecipeTag.objects.create(
-                recipe=recipe,
-                tag=tag
-            )
+        create_amout_of_ingredients(ingredients, recipe)
+        create_recipe_tag(tags, recipe)
         return recipe
 
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
+        recipe = instance
 
         if ingredients is not None:
-            instance.amountofingredients.all().delete()
-            for ingredient in ingredients:
-                current_ingredient = get_object_or_404(
-                    Ingredient,
-                    id=ingredient['id']
-                )
-                amount = ingredient['amount']
-                AmountOfIngredients.objects.create(
-                    recipe=instance,
-                    ingredient=current_ingredient,
-                    amount=amount
-                )
+            instance.amountofingredient.all().delete()
+            create_amout_of_ingredients(ingredients, recipe)
+
         if tags is not None:
             instance.recipetag.all().delete()
-            for tag in tags:
-                RecipeTag.objects.create(
-                    recipe=instance,
-                    tag=tag
-                )
+            create_recipe_tag(tags, recipe)
 
-        for key, value in validated_data.items():
-            setattr(instance, key, value)
-        instance.save()
-        return instance
+        return super(
+            RecipeCreateSerializer, self
+        ).update(instance, validated_data)
 
     def to_representation(self, value):
         return RecipeSerializer(

@@ -1,59 +1,82 @@
 """Вспомогательные функции, сокращающие код"""
-import textwrap
+from io import BytesIO
 
 from django.shortcuts import get_object_or_404
-from fpdf import FPDF
-from recipes.models import Recipe
-from rest_framework import status
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from rest_framework import serializers, status
 from rest_framework.response import Response
 
-from .serializers import ShortViewOfRecipe
+from recipes.models import AmountOfIngredient, Ingredient, Recipe, RecipeTag
 
 
-def extra_recipe(request, recipe_id, obj, message1, message2, message3):
+def extra_recipe(request, recipe_id, obj, serializer_short, message_exists,
+                 message_del, message_no):
     """Вспомогательная функция для view-функций:
     shoping_cart и favorite"""
     user = request.user
     recipe = get_object_or_404(Recipe, id=recipe_id)
     thing = obj.objects.filter(user=user, recipe=recipe)
-    print(thing)
     if request.method == 'POST':
         if thing.exists():
-            return Response(f"{message1}", status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                f"{message_exists}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         obj.objects.get_or_create(user=user, recipe=recipe)
-        serializer = ShortViewOfRecipe(recipe)
+        serializer = serializer_short(recipe)
         return Response(serializer.data, status=status.HTTP_200_OK)
     if thing.exists():
         thing.delete()
-        return Response(f"{message2}", status=status.HTTP_200_OK)
-    return Response(f"{message3}", status=status.HTTP_400_BAD_REQUEST)
+        return Response(f"{message_del}", status=status.HTTP_200_OK)
+    return Response(f"{message_no}", status=status.HTTP_400_BAD_REQUEST)
 
 
-def text_to_pdf(text, filename):
-    """Вспомогательная функция для конвертирования
-    файла с расширением .txt в .pdf"""
-    a4_width_mm = 210
-    pt_to_mm = 0.35
-    fontsize_pt = 10
-    fontsize_mm = fontsize_pt * pt_to_mm
-    margin_bottom_mm = 10
-    character_width_mm = 7 * pt_to_mm
-    width_text = a4_width_mm / character_width_mm
+def create_amout_of_ingredients(ingredients, recipe):
+    for ingredient in ingredients:
+        current_ingredient = get_object_or_404(
+            Ingredient,
+            id=ingredient['id']
+        )
+        if AmountOfIngredient.objects.filter(
+            recipe=recipe,
+            ingredient=current_ingredient,
+        ).exists():
+            raise serializers.ValidationError('Ингредиенты повторяются')
+        amount = ingredient['amount']
+        AmountOfIngredient.objects.bulk_create([
+            AmountOfIngredient(
+                recipe=recipe,
+                ingredient=current_ingredient,
+                amount=amount
+            )
+        ])
 
-    pdf = FPDF(orientation='P', unit='mm', format='A4')
-    pdf.set_auto_page_break(True, margin=margin_bottom_mm)
-    pdf.add_page()
-    pdf.add_font('DejaVu', '', 'fonts/DejaVuSansCondensed.ttf', uni=True)
-    pdf.set_font('DejaVu', '', 14)
-    splitted = text.split('\n')
 
-    for line in splitted:
-        lines = textwrap.wrap(line, width_text)
+def create_recipe_tag(tags, recipe):
+    for tag in tags:
+        if RecipeTag.objects.filter(
+            recipe=recipe,
+            tag=tag,
+        ).exists():
+            raise serializers.ValidationError('Тэги повторяются')
+        RecipeTag.objects.bulk_create([
+            RecipeTag(
+                recipe=recipe,
+                tag=tag
+            )
+        ])
 
-        if len(lines) == 0:
-            pdf.ln()
 
-        for wrap in lines:
-            pdf.cell(0, fontsize_mm, wrap, ln=1)
-
-    pdf.output(filename, 'F')
+def generate_pdf(text):
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    pdfmetrics.registerFont(TTFont('DejaVu', 'fonts/DejaVuSansCondensed.ttf'))
+    pdf.setFont('DejaVu', '', 14)
+    pdf.drawString(220, 700, text)
+    pdf.showPage()
+    pdf.save()
+    pdf_output = buffer
+    return pdf_output

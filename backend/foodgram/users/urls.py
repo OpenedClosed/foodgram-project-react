@@ -15,8 +15,8 @@ router_v1.register(
 router_v1.register('', CustomUserViewSet, basename='users')
 
 urlpatterns = [
-    path('auth/token/login/', get_token),
-    path('auth/token/logout/', delete_token),
-    path('users/<user_id>/subscribe/', subscribe),
+    path('auth/token/login/', get_token, name='login'),
+    path('auth/token/logout/', delete_token, name='logout'),
+    path('users/<int:user_id>/subscribe/', subscribe, name='subscribe'),
     path('users/', include(router_v1.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

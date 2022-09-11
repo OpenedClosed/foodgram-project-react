@@ -16,9 +16,3 @@ class CreateReadViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                         mixins.CreateModelMixin, viewsets.GenericViewSet):
     """Миксин создания объектов и чтения списка и опреденных объектов"""
     pass
-
-
-class CreateDeleteViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin,
-                          mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """Миксин создания и удаления опреденных объектов"""
-    pass

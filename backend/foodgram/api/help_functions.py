@@ -70,12 +70,11 @@ def create_recipe_tag(tags, recipe):
 
 
 def generate_pdf(text):
-    buffer = BytesIO()
+    pdf_output = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=letter)
     pdfmetrics.registerFont(TTFont('DejaVu', 'fonts/DejaVuSansCondensed.ttf'))
     pdf.setFont('DejaVu', '', 14)
     pdf.drawString(220, 700, text)
     pdf.showPage()
     pdf.save()
-    pdf_output = buffer
     return pdf_output

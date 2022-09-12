@@ -1,6 +1,7 @@
 from django.contrib.auth import password_validation
-from recipes.models import Recipe
 from rest_framework import serializers
+
+from recipes.models import Recipe
 
 from .models import CustomUser, Subscription
 

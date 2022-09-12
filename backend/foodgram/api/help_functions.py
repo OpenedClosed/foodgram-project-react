@@ -35,6 +35,8 @@ def extra_recipe(request, recipe_id, obj, serializer_short, message_exists,
 
 
 def create_amout_of_ingredients(ingredients, recipe):
+    """Вспомогательная функция для создание связи
+    между рецептом, его ингредиентами и их количеством"""
     for ingredient in ingredients:
         current_ingredient = get_object_or_404(
             Ingredient,
@@ -51,6 +53,8 @@ def create_amout_of_ingredients(ingredients, recipe):
 
 
 def create_recipe_tag(tags, recipe):
+    """Вспомогательная функция для создание связи
+    между рецептом и его тэгами"""
     for tag in tags:
         RecipeTag.objects.bulk_create([
             RecipeTag(
@@ -61,6 +65,8 @@ def create_recipe_tag(tags, recipe):
 
 
 def generate_pdf(text):
+    """Вспомогательная функция для преобразования
+    файла формата .txt в файл формата .pdf"""
     pdf_output = BytesIO()
     pdf = canvas.Canvas(pdf_output, pagesize=letter)
     pdfmetrics.registerFont(TTFont('DejaVu', 'fonts/DejaVuSansCondensed.ttf'))

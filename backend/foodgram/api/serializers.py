@@ -75,8 +75,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             recipe=obj.id,
             user=request_user
         ).exists()
-        obj.is_favorited = queryset
-        return obj.is_favorited
+        return queryset
 
     def get_is_in_shopping_cart(self, obj):
         request_user = self.context.get('request').user.id
@@ -84,8 +83,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             recipe=obj.id,
             user=request_user
         ).exists()
-        obj.is_in_shopping_cart = queryset
-        return obj.is_in_shopping_cart
+        return queryset
 
     class Meta:
         model = Recipe
@@ -139,6 +137,26 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return super(
             RecipeCreateSerializer, self
         ).update(instance, validated_data)
+
+    def validate(self, data):
+        ingredients = data['ingredients']
+        id_of_input_ingredients = []
+        for ingredient in ingredients:
+            if ingredient['id'] in id_of_input_ingredients:
+                raise serializers.ValidationError(
+                    {'ingredients': ('Ингредиенты повторяются')}
+                )
+            id_of_input_ingredients.append(ingredient['id'])
+
+        tags = data['tags']
+        input_tags = []
+        for tag in tags:
+            if tag in input_tags:
+                raise serializers.ValidationError(
+                    {'tags': ('Тэги повторяются')}
+                )
+            input_tags.append(tag)
+        return data
 
     def to_representation(self, value):
         return RecipeSerializer(

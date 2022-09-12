@@ -94,13 +94,7 @@ def get_token(request):
 @api_view(['POST', ])
 def delete_token(request):
     """Вью-функция, отвечающая за удаление токена"""
-    if request.data is None:
-        request.auth.delete()
-        return Response({None}, status=status.HTTP_200_OK)
-    return Response(
-        {"Введены некорректные данные"},
-        status=status.HTTP_400_BAD_REQUEST
-    )
+    request.auth.delete()
 
 
 @api_view(['POST', 'DELETE', ])

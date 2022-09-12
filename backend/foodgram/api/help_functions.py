@@ -6,7 +6,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.response import Response
 
 from recipes.models import AmountOfIngredient, Ingredient, Recipe, RecipeTag
@@ -40,11 +40,6 @@ def create_amout_of_ingredients(ingredients, recipe):
             Ingredient,
             id=ingredient['id']
         )
-        if AmountOfIngredient.objects.filter(
-            recipe=recipe,
-            ingredient=current_ingredient,
-        ).exists():
-            raise serializers.ValidationError('Ингредиенты повторяются')
         amount = ingredient['amount']
         AmountOfIngredient.objects.bulk_create([
             AmountOfIngredient(
@@ -57,11 +52,6 @@ def create_amout_of_ingredients(ingredients, recipe):
 
 def create_recipe_tag(tags, recipe):
     for tag in tags:
-        if RecipeTag.objects.filter(
-            recipe=recipe,
-            tag=tag,
-        ).exists():
-            raise serializers.ValidationError('Тэги повторяются')
         RecipeTag.objects.bulk_create([
             RecipeTag(
                 recipe=recipe,

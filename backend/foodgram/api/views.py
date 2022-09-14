@@ -99,4 +99,3 @@ def download_shoping_cart(request):
     )
     response['Content-Disposition'] = 'attachment; filename=shoping_cart.pdf'
     return response
- 

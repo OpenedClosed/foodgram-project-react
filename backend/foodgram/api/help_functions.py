@@ -37,19 +37,13 @@ def extra_recipe(request, recipe_id, obj, serializer_short, message_exists,
 def create_amout_of_ingredients(ingredients, recipe):
     """Вспомогательная функция для создание связи
     между рецептом, его ингредиентами и их количеством"""
-    for ingredient in ingredients:
-        current_ingredient = get_object_or_404(
+    ingredients_in_recipe = [
+        AmountOfIngredient(recipe=recipe, ingredient=get_object_or_404(
             Ingredient,
             id=ingredient['id']
-        )
-        amount = ingredient['amount']
-        AmountOfIngredient.objects.bulk_create([
-            AmountOfIngredient(
-                recipe=recipe,
-                ingredient=current_ingredient,
-                amount=amount
-            )
-        ])
+        ), amount=ingredient['amount']) for ingredient in ingredients
+    ]
+    AmountOfIngredient.objects.bulk_create(ingredients_in_recipe)
 
 
 def create_recipe_tag(tags, recipe):

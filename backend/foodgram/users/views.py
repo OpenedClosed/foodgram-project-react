@@ -6,7 +6,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.viewsets import CreateReadViewSet, ReadListViewSet
-
 from .models import CustomUser, Subscription
 from .serializers import (ChangePasswordSerializer, CustomUserSerializer,
                           SignUpSerializer, SubscriptionSerializer,
@@ -95,6 +94,10 @@ def get_token(request):
 def delete_token(request):
     """Вью-функция, отвечающая за удаление токена"""
     request.auth.delete()
+    return Response(
+        {'Ваш токен успешно удален'},
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(['POST', 'DELETE', ])

@@ -1,5 +1,6 @@
 from io import StringIO
 
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,7 +9,6 @@ from rest_framework.decorators import api_view
 
 from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
-
 from .filters import RecipeFilterSet
 from .help_functions import extra_recipe, generate_pdf
 from .permissions import IsAuthorOrReadOnly
@@ -74,26 +74,21 @@ def download_shoping_cart(request):
     """Вью-функция для загрузки списка покупок"""
     user = request.user
     shopping_cart = ShoppingCart.objects.filter(user=user)
-    ingredients_in_shopping_cart = {}
     text_in_shopping_cart = ''
     text_file = StringIO()
-    for obj in shopping_cart.values():
-        recipe = get_object_or_404(Recipe, id=obj['recipe_id'])
-        for ingredient in recipe.ingredients.values_list('name', 'id'):
-            name = ingredient[0]
-            amount = get_object_or_404(
-                AmountOfIngredient,
-                ingredient=ingredient[1],
-                recipe=recipe
-            ).amount
-            if name not in ingredients_in_shopping_cart:
-                ingredients_in_shopping_cart[name] = 0
-            ingredients_in_shopping_cart[name] += amount
-    for item in ingredients_in_shopping_cart:
-        ingredient = get_object_or_404(Ingredient, name=item)
+    ingredients = AmountOfIngredient.objects.filter(
+        recipe__id__in=shopping_cart.values_list('recipe_id')
+    ).values(
+        'ingredient__name'
+    ).annotate(amount=Sum('amount')).order_by('ingredient__name')
+
+    for item in ingredients:
+        ingredient_name = item['ingredient__name']
+        ingredient = get_object_or_404(Ingredient, name=ingredient_name)
         measurement_unit = ingredient.measurement_unit
-        text_in_shopping_cart += (f'{item} ({measurement_unit}) - '
-                                  f'{ingredients_in_shopping_cart[item]}\n')
+        ingredient_amount = item['amount']
+        text_in_shopping_cart += (f'{ingredient_name} ({measurement_unit}) - '
+                                  f'{ingredient_amount}\n')
     text_file.write(text_in_shopping_cart)
 
     input_file = text_file.getvalue()

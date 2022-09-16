@@ -36,6 +36,6 @@ services:
     depends_on:
       - web 
 
-volumes:
+volumes: 
   static_value:
   media_value:

@@ -8,7 +8,7 @@ services:
       - ./.env
   web:
     # build: ../backend/foodgram/
-    image: 89639339335/foodgram
+    image: 89639339335/foodgram 
     restart: always
     volumes:
       - static_value:/app/static/

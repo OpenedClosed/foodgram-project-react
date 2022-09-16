@@ -36,7 +36,7 @@ services:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
     depends_on:
-      - web
+      - web 
 
 volumes:
   static_value:

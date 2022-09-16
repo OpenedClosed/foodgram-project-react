@@ -93,9 +93,10 @@ def download_shoping_cart(request):
 
     input_file = text_file.getvalue()
     output_file = generate_pdf(input_file)
+    print(output_file.getvalue())
     response = HttpResponse(
-        output_file.read(),
-        content_type='application/force-download'
+        output_file.getvalue(),
+        content_type='application/pdf'
     )
     response['Content-Disposition'] = 'attachment; filename=shoping_cart.pdf'
     return response

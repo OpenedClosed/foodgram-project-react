@@ -16,19 +16,17 @@ services:
     depends_on:
       - db 
     env_file:
-      - ./.env
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ../frontend/:/app/result_build/
+      - ./.env 
+  # frontend:
+  #   build:
+  #     context: ../frontend
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ../frontend/:/app/result_build/
   nginx:
     image: nginx:1.19.3
     ports:
       - "80:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - static_value:/var/html/static/
       - media_value:/var/html/media/

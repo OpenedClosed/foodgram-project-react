@@ -63,7 +63,7 @@ def generate_pdf(text):
     файла формата .txt в файл формата .pdf"""
     pdf_output = BytesIO()
     pdf = canvas.Canvas(pdf_output, pagesize=letter)
-    pdfmetrics.registerFont(TTFont('DejaVu', 'fonts/DejaVuSansCondensed.ttf'))
+    pdfmetrics.registerFont(TTFont('DejaVu', 'fonts/DejaVuSansCondensed.ttf', "UTF-8"))
     pdf.setFont('DejaVu', '', 14)
     pdf.drawString(220, 700, text)
     pdf.showPage()

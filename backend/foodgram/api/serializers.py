@@ -105,7 +105,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True,
     )
-    image = Base64ImageField(max_length=None)
+    image = Base64ImageField(use_url=True, )
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')

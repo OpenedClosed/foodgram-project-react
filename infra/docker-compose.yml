@@ -10,7 +10,7 @@ services:
     # build: ../backend/foodgram/
     image: 89639339335/foodgram 
     restart: always
-    volumes:
+    volumes: 
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on: 

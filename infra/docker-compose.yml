@@ -7,7 +7,6 @@ services:
     env_file:
       - ./.env
   web:
-    # build: ../backend/foodgram/
     image: 89639339335/foodgram 
     restart: always
     volumes: 
@@ -18,12 +17,12 @@ services:
     env_file: 
       - ./.env 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: 89639339335/foodgram_frontend 
     volumes:
       - ../frontend/:/app/result_build/
-  nginx:
+    depends_on:
+      - db
+  nginx: 
     image: nginx:1.19.3
     ports:
       - "80:80"
@@ -35,6 +34,7 @@ services:
       - media_value:/var/html/media/
     depends_on:
       - web 
+      - frontend
 
 volumes: 
   static_value:

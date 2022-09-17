@@ -60,6 +60,7 @@ jobs:
           script: |
             sudo docker-compose stop
             sudo docker-compose rm web
+            sudo docker compose rm nginx
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env

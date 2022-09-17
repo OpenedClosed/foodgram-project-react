@@ -1,12 +1,12 @@
 from django.db.models import Q
-from django_filters import BooleanFilter, CharFilter, FilterSet
+from django_filters import AllValuesMultipleFilter, BooleanFilter, FilterSet
 
 from recipes.models import Recipe
 
 
 class RecipeFilterSet(FilterSet):
     """Фильтр для рецептов"""
-    tags = CharFilter(field_name='tags__slug')
+    tags = AllValuesMultipleFilter(field_name='tags__slug')
     is_favorited = BooleanFilter(method='get_is_favorited')
     is_in_shopping_cart = BooleanFilter(
         method='get_is_in_shopping_cart'

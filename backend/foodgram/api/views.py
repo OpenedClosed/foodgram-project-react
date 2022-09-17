@@ -22,6 +22,8 @@ class IngredientViewSet(ReadViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     pagination_class = None
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
+    search_fields = ('^name',)
 
 
 class TagViewSet(ReadViewSet):

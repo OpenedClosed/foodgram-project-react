@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 
 from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
-from .filters import RecipeFilterSet
+from .filters import IngredientFilter, RecipeFilterSet2
 from .help_functions import extra_recipe, generate_pdf
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
@@ -22,6 +22,7 @@ class IngredientViewSet(ReadViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     pagination_class = None
+    filterset_class = IngredientFilter
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
     search_fields = ('^name',)
 
@@ -37,7 +38,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Рецепт"""
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly, ]
-    filterset_class = RecipeFilterSet
+    filterset_class = RecipeFilterSet2
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
 
     def get_serializer_class(self):

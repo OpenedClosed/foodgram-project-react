@@ -1,7 +1,22 @@
 from django.db.models import Q
-from django_filters import AllValuesMultipleFilter, BooleanFilter, FilterSet
+from django_filters import (AllValuesMultipleFilter, BooleanFilter,
+                            CharFilter, FilterSet)
 
-from recipes.models import Recipe
+from recipes.models import Recipe, Ingredient
+
+
+class IngredientFilter(FilterSet):
+    """
+    Фильтр для ингридиентов.
+    """
+    name = CharFilter(
+        field_name='name',
+        lookup_expr='istartswith',
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
 
 
 class RecipeFilterSet(FilterSet):
@@ -28,3 +43,28 @@ class RecipeFilterSet(FilterSet):
         model = Recipe
         fields = ['tags', 'author', 'is_favorited', 'is_in_shopping_cart', ]
         ordering = ['id']
+
+
+class RecipeFilterSet2(FilterSet):
+    """
+    Фильтр для рецептов.
+    """
+    is_favorited = BooleanFilter(
+        field_name='is_favorited',
+        method='favorite_filter'
+    )
+    is_in_shopping_cart = BooleanFilter(
+        field_name='is_in_shopping_cart',
+        method='shopping_cart_filter'
+    )
+    tags = AllValuesMultipleFilter(field_name='tags__slug')
+
+    def favorite_filter(self, queryset, name, value):
+        return Recipe.objects.filter(favorite__user=self.request.user)
+
+    def shopping_cart_filter(self, queryset, name, value):
+        return Recipe.objects.filter(shopping_cart__user=self.request.user)
+
+    class Meta:
+        model = Recipe
+        fields = ['author']

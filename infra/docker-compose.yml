@@ -7,22 +7,22 @@ services:
     env_file:
       - ./.env
   web:
-    image: 89639339335/foodgram 
+    image: 89639339335/foodgram
     restart: always
-    volumes: 
+    volumes:
       - static_value:/app/static/
       - media_value:/app/media/
-    depends_on: 
-      - db 
-    env_file: 
-      - ./.env 
+    depends_on:
+      - db
+    env_file:
+      - ./.env
   frontend:
-    image: 89639339335/foodgram_frontend 
+    image: 89639339335/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
       - db
-  nginx: 
+  nginx:
     image: nginx:1.19.3
     ports:
       - "80:80"
@@ -33,9 +33,10 @@ services:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     depends_on:
-      - web 
+      - web
       - frontend
 
-volumes: 
+volumes:
   static_value:
   media_value:
+

@@ -43,6 +43,7 @@ MIDDLEWARE = [
 ]
 
 MEDIA_URL = '/media/'
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 ROOT_URLCONF = 'foodgram.urls'
@@ -101,7 +102,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 LANGUAGE_CODE = 'ru-RU'
 
@@ -112,8 +113,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 

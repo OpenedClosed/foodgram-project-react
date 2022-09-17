@@ -93,7 +93,6 @@ def download_shoping_cart(request):
 
     input_file = text_file.getvalue()
     output_file = generate_pdf(input_file)
-    print(output_file.getvalue())
     response = HttpResponse(
         output_file.getvalue(),
         content_type='application/pdf'

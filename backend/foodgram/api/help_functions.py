@@ -64,9 +64,9 @@ def generate_pdf(text):
     pdf_output = BytesIO()
     pdf = canvas.Canvas(pdf_output, pagesize=letter)
     pdfmetrics.registerFont(
-        TTFont('DejaVu', 'fonts/DejaVuSansCondensed.ttf', "UTF-8")
+        TTFont("DejaVuSerif", "DejaVuSerif.ttf", "UTF-8")
     )
-    pdf.setFont('DejaVu', '', 14)
+    pdf.setFont('DejaVuSerif', '', 14)
     pdf.drawString(220, 700, text)
     pdf.showPage()
     pdf.save()

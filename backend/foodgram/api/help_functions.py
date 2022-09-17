@@ -2,7 +2,7 @@
 from io import BytesIO
 
 from django.shortcuts import get_object_or_404
-from reportlab.lib.pagesizes import letter
+# from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -61,13 +61,26 @@ def create_recipe_tag(tags, recipe):
 def generate_pdf(text):
     """Вспомогательная функция для преобразования
     файла формата .txt в файл формата .pdf"""
-    pdf_output = BytesIO()
-    pdf = canvas.Canvas(pdf_output, pagesize=letter)
-    pdfmetrics.registerFont(
-        TTFont("DejaVuSerif", "DejaVuSerif.ttf", "UTF-8")
-    )
-    pdf.setFont('DejaVuSerif', '', 14)
-    pdf.drawString(220, 700, text)
-    pdf.showPage()
-    pdf.save()
-    return pdf_output
+    # pdf_output = BytesIO()
+    # pdf = canvas.Canvas(pdf_output, pagesize=letter)
+    # pdfmetrics.registerFont(
+    #     TTFont("DejaVuSerif", "DejaVuSerif.ttf", "UTF-8")
+    # )
+    # pdf.setFont('DejaVuSerif', '', 14)
+    # pdf.drawString(220, 700, text)
+    # pdf.showPage()
+    # pdf.save()
+    # return pdf_output
+    font = "DejaVuSerif"
+    pdfmetrics.registerFont(TTFont("DejaVuSerif",
+                                   "DejaVuSerif.ttf",
+                                   "UTF-8"))
+    buffer = BytesIO()
+    pdf_file = canvas.Canvas(buffer)
+    pdf_file.setFont(font, 24)
+    pdf_file.drawString(150, 800, text)
+    pdf_file.setFont(font, 14)
+    pdf_file.showPage()
+    pdf_file.save()
+    buffer.seek(0)
+    return buffer

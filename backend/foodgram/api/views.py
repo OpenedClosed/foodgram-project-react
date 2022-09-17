@@ -1,7 +1,8 @@
 from io import StringIO
 
 from django.db.models import Sum
-from django.http import HttpResponse
+# from django.http import HttpResponse
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
@@ -9,7 +10,7 @@ from rest_framework.decorators import api_view
 
 from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
-from .filters import IngredientFilter, RecipeFilterSet2
+from .filters import IngredientSearchFilter, RecipeFilterSet2
 from .help_functions import extra_recipe, generate_pdf
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
@@ -22,8 +23,7 @@ class IngredientViewSet(ReadViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     pagination_class = None
-    filterset_class = IngredientFilter
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
+    filter_backends = [IngredientSearchFilter]
     search_fields = ('^name',)
 
 
@@ -96,9 +96,11 @@ def download_shoping_cart(request):
 
     input_file = text_file.getvalue()
     output_file = generate_pdf(input_file)
-    response = HttpResponse(
-        output_file.getvalue(),
-        content_type='application/pdf'
-    )
-    response['Content-Disposition'] = 'attachment; filename=shoping_cart.pdf'
-    return response
+    return FileResponse(output_file, as_attachment=True,
+                        filename="shopping_list.pdf")
+    # response = HttpResponse(
+    #     output_file.getvalue(),
+    #     content_type='application/pdf'
+    # )
+    # response['Content-Disposition'] = 'attachment; filename=shoping_cart.pdf'
+    # return response

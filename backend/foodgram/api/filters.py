@@ -1,22 +1,12 @@
 from django.db.models import Q
 from django_filters import (AllValuesMultipleFilter, BooleanFilter,
-                            CharFilter, FilterSet)
+                            FilterSet, SearchFilter)
 
-from recipes.models import Recipe, Ingredient
+from recipes.models import Recipe
 
 
-class IngredientFilter(FilterSet):
-    """
-    Фильтр для ингридиентов.
-    """
-    name = CharFilter(
-        field_name='name',
-        lookup_expr='istartswith',
-    )
-
-    class Meta:
-        model = Ingredient
-        fields = ('name',)
+class IngredientSearchFilter(SearchFilter):
+    search_param = 'name'
 
 
 class RecipeFilterSet(FilterSet):

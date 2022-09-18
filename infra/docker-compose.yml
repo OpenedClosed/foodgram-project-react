@@ -19,7 +19,7 @@ services:
   frontend:
     image: 89639339335/foodgram_frontend 
     volumes:
-      - ../frontend/:/app/result_build/
+      - ./:/app/result_build/
     depends_on:
       - db
   nginx: 

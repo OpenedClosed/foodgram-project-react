@@ -16,7 +16,7 @@ services:
       - db 
     env_file: 
       - ./.env 
-  frontend:
+  frontend: 
     image: 89639339335/foodgram_frontend 
     volumes:
       - ./:/app/result_build/

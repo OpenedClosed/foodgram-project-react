@@ -1,11 +1,5 @@
 """Вспомогательные функции, сокращающие код"""
-from io import BytesIO
-
 from django.shortcuts import get_object_or_404
-# from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import status
 from rest_framework.response import Response
 

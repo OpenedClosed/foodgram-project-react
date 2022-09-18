@@ -1,10 +1,10 @@
 from io import StringIO
 
 from django.db.models import Sum
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import api_view
 
 from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
@@ -17,16 +17,16 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
 from .viewsets import ReadViewSet
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(ReadViewSet):
     """Вьюсет модели Ингредиент"""
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     pagination_class = None
-    filter_backends = [IngredientSearchFilter]
+    filter_backends = [IngredientSearchFilter, ]
     search_fields = ('^name',)
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(ReadViewSet):
     """Вьюсет модели Тэг"""
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
@@ -38,7 +38,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly, ]
     filterset_class = RecipeFilterSet
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
+    filter_backends = [DjangoFilterBackend, ]
 
     def get_serializer_class(self):
         if self.request.method in ('GET', ):
@@ -82,21 +82,21 @@ def download_shoping_cart(request):
         recipe__id__in=shopping_cart.values_list('recipe_id')
     ).values(
         'ingredient__name'
-    ).annotate(amount=Sum('amount')).order_by('ingredient__name')
+    ).annotate(amount_of_ingredient=Sum('amount')).order_by('ingredient__name')
 
     for item in ingredients:
         ingredient_name = item['ingredient__name']
         ingredient = get_object_or_404(Ingredient, name=ingredient_name)
         measurement_unit = ingredient.measurement_unit
-        ingredient_amount = item['amount']
+        ingredient_amount = item['amount_of_ingredient']
         text_in_shopping_cart += (f'{ingredient_name} ({measurement_unit}) - '
                                   f'{ingredient_amount}\n')
     text_file.write(text_in_shopping_cart)
 
     input_file = text_file.getvalue()
-    response = HttpResponse( 
-        input_file, 
-        content_type='application/force-download' 
-    ) 
-    response['Content-Disposition'] = 'attachment; filename=shoping_cart.txt' 
-    return response 
+    response = HttpResponse(
+        input_file,
+        content_type='application/force-download'
+    )
+    response['Content-Disposition'] = 'attachment; filename=shoping_cart.txt'
+    return response

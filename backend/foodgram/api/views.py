@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 
 from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
-from .filters import IngredientSearchFilter, RecipeFilterSet
+from .filters import IngredientSearchFilter, RecipeFilterSet3
 from .help_functions import extra_recipe, generate_pdf
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
@@ -37,7 +37,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Рецепт"""
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly, ]
-    filterset_class = RecipeFilterSet
+    filterset_class = RecipeFilterSet3
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
 
     def get_serializer_class(self):

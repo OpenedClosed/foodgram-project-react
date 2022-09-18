@@ -3,6 +3,7 @@ from django_filters import (AllValuesMultipleFilter, BooleanFilter,
                             FilterSet, SearchFilter)
 
 from recipes.models import Recipe
+from django_filters.widgets import BooleanWidget
 
 
 class IngredientSearchFilter(SearchFilter):
@@ -19,13 +20,13 @@ class RecipeFilterSet(FilterSet):
 
     def get_is_favorited(self, queryset, name, value):
         user = self.request.user
-        if value == 1 and user.is_authenticated:
+        if value and user.is_authenticated:
             return queryset.filter(favorite__user=user)
         return queryset.filter(~Q(favorite__user=user))
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
-        if value == 1 and user.is_authenticated:
+        if value and user.is_authenticated:
             return queryset.filter(shoppingcart__user=user)
         return queryset.filter(~Q(shoppingcart__user=user))
 
@@ -58,3 +59,30 @@ class RecipeFilterSet2(FilterSet):
     class Meta:
         model = Recipe
         fields = ['author']
+
+
+class RecipeFilterSet3(FilterSet):
+    is_in_shopping_cart = BooleanFilter(
+        method="filter_is_in_shopping_cart", widget=BooleanWidget()
+    )
+    is_favorited = BooleanFilter(
+        method="filter_is_favorited", widget=BooleanWidget()
+    )
+    tags = AllValuesMultipleFilter(field_name="tags__slug")
+    author = AllValuesMultipleFilter(field_name="author__id")
+
+    def filter_is_favorited(self, queryset, name, value):
+        user = self.request.user
+        if value:
+            return Recipe.objects.filter(favorite__user=user)
+        return queryset
+
+    def filter_is_in_shopping_cart(self, queryset, name, value):
+        user = self.request.user
+        if value:
+            return Recipe.objects.filter(shoppingcart__user=user)
+        return queryset
+
+    class Meta:
+        model = Recipe
+        fields = ["tags__slug", "is_favorited", "is_in_shopping_cart"]

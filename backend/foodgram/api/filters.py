@@ -1,6 +1,8 @@
 from django.db.models import Q
 from django_filters import (AllValuesMultipleFilter, BooleanFilter,
-                            FilterSet, SearchFilter)
+                            FilterSet)
+
+from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe
 from django_filters.widgets import BooleanWidget
@@ -69,7 +71,6 @@ class RecipeFilterSet3(FilterSet):
         method="filter_is_favorited", widget=BooleanWidget()
     )
     tags = AllValuesMultipleFilter(field_name="tags__slug")
-    author = AllValuesMultipleFilter(field_name="author__id")
 
     def filter_is_favorited(self, queryset, name, value):
         user = self.request.user

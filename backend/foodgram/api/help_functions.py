@@ -56,24 +56,3 @@ def create_recipe_tag(tags, recipe):
                 tag=tag
             )
         ])
-
-
-def generate_pdf(text):
-    """Вспомогательная функция для преобразования
-    файла формата .txt в файл формата .pdf"""
-    font = "DejaVuSerif"
-    pdfmetrics.registerFont(
-        TTFont(
-            "DejaVuSerif",
-            "DejaVuSerif.ttf",
-            "UTF-8"
-        )
-    )
-    buffer = BytesIO()
-    pdf_file = canvas.Canvas(buffer)
-    pdf_file.setFont(font, 24)
-    pdf_file.drawString(150, 800, text)
-    pdf_file.showPage()
-    pdf_file.save()
-    buffer.seek(0)
-    return buffer

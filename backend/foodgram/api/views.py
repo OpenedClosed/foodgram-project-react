@@ -1,7 +1,7 @@
 from io import StringIO
 
 from django.db.models import Sum
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
@@ -9,15 +9,15 @@ from rest_framework.decorators import api_view
 
 from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
-from .filters import IngredientSearchFilter, RecipeFilterSet3
-from .help_functions import extra_recipe, generate_pdf
+from .filters import IngredientSearchFilter, RecipeFilterSet
+from .help_functions import extra_recipe
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, ShortViewOfRecipe, TagSerializer)
 from .viewsets import ReadViewSet
 
 
-class IngredientViewSet(ReadViewSet):
+class IngredientViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Ингредиент"""
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
@@ -26,7 +26,7 @@ class IngredientViewSet(ReadViewSet):
     search_fields = ('^name',)
 
 
-class TagViewSet(ReadViewSet):
+class TagViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Тэг"""
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
@@ -37,7 +37,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Рецепт"""
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly, ]
-    filterset_class = RecipeFilterSet3
+    filterset_class = RecipeFilterSet
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, ]
 
     def get_serializer_class(self):
@@ -94,6 +94,9 @@ def download_shoping_cart(request):
     text_file.write(text_in_shopping_cart)
 
     input_file = text_file.getvalue()
-    output_file = generate_pdf(input_file)
-    return FileResponse(output_file, as_attachment=True,
-                        filename="shopping_list.pdf")
+    response = HttpResponse( 
+        input_file, 
+        content_type='application/force-download' 
+    ) 
+    response['Content-Disposition'] = 'attachment; filename=shoping_cart.txt' 
+    return response 

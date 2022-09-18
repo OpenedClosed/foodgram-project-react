@@ -1,7 +1,6 @@
 from io import StringIO
 
 from django.db.models import Sum
-# from django.http import HttpResponse
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -98,9 +97,3 @@ def download_shoping_cart(request):
     output_file = generate_pdf(input_file)
     return FileResponse(output_file, as_attachment=True,
                         filename="shopping_list.pdf")
-    # response = HttpResponse(
-    #     output_file.getvalue(),
-    #     content_type='application/pdf'
-    # )
-    # response['Content-Disposition'] = 'attachment; filename=shoping_cart.pdf'
-    # return response

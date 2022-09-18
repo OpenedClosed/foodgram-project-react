@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django_filters import (AllValuesMultipleFilter, BooleanFilter,
+from django_filters import (AllValuesMultipleFilter, BooleanFilter, CharField,
                             FilterSet, SearchFilter)
 
 from recipes.models import Recipe
@@ -11,7 +11,7 @@ class IngredientSearchFilter(SearchFilter):
 
 class RecipeFilterSet(FilterSet):
     """Фильтр для рецептов"""
-    tags = AllValuesMultipleFilter(field_name='tags__slug')
+    tags = CharField(field_name='tags__slug')
     is_favorited = BooleanFilter(method='get_is_favorited')
     is_in_shopping_cart = BooleanFilter(
         method='get_is_in_shopping_cart'
@@ -53,7 +53,7 @@ class RecipeFilterSet2(FilterSet):
         return Recipe.objects.filter(favorite__user=self.request.user)
 
     def shopping_cart_filter(self, queryset, name, value):
-        return Recipe.objects.filter(shopping_cart__user=self.request.user)
+        return Recipe.objects.filter(shoppingcart__user=self.request.user)
 
     class Meta:
         model = Recipe

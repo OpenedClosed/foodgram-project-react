@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django_filters import (AllValuesMultipleFilter, BooleanFilter, CharField,
+from django_filters import (AllValuesMultipleFilter, BooleanFilter,
                             FilterSet, SearchFilter)
 
 from recipes.models import Recipe
@@ -19,13 +19,13 @@ class RecipeFilterSet(FilterSet):
 
     def get_is_favorited(self, queryset, name, value):
         user = self.request.user
-        if (value==1) and user.is_authenticated:
+        if value == 1 and user.is_authenticated:
             return queryset.filter(favorite__user=user)
         return queryset.filter(~Q(favorite__user=user))
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
-        if (value==1) and user.is_authenticated:
+        if value == 1 and user.is_authenticated:
             return queryset.filter(shoppingcart__user=user)
         return queryset.filter(~Q(shoppingcart__user=user))
 

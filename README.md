@@ -43,4 +43,4 @@ Workflow состоит из четырёх шагов:
 - Электронная почта: opendoor200179@gmail.com
 - Ссылка на проект: http://130.193.55.211/
 
-![yamdb_final_workflow](https://github.com/OpenedClosed/foodgram-project-react/actions/workflows/foodgram-workflow.yml/badge.svg)
+![foodgram_workflow](https://github.com/OpenedClosed/foodgram-project-react/actions/workflows/foodgram-workflow.yml/badge.svg)

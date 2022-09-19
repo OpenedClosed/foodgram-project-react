@@ -96,7 +96,7 @@ def download_shoping_cart(request):
     input_file = text_file.getvalue()
     response = HttpResponse(
         input_file,
-        content_type='application/force-download'
+        content_type='text/plain'
     )
     response['Content-Disposition'] = 'attachment; filename=shoping_cart.txt'
     return response

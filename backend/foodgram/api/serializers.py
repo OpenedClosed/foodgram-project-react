@@ -143,6 +143,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {'ingredients': ('Ингредиенты повторяются')}
                 )
+            if ingredient['amount'] <= 0:
+                raise serializers.ValidationError(
+                    {'amount': ('Некорректное количество ингредиента')}
+                )
             id_of_input_ingredients.append(ingredient['id'])
 
         tags = data['tags']

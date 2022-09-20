@@ -4,13 +4,14 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 
-from recipes.models import (AmountOfIngredient, Favorite, Ingredient, Recipe,
-                            ShoppingCart, Tag)
 from .filters import IngredientSearchFilter, RecipeFilterSet
 from .help_functions import extra_recipe
+from .pagination import LimitPageNumberPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, ShortViewOfRecipe, TagSerializer)
@@ -38,6 +39,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly, ]
     filterset_class = RecipeFilterSet
+    pagination_class = LimitPageNumberPagination
     filter_backends = [DjangoFilterBackend, ]
 
     def get_serializer_class(self):
